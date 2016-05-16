@@ -95,14 +95,14 @@ class Matrix(object):
             output.write(request.content)
 
     def save_data_to_json(self):
-        with open('data.json', 'w') as output:
+        with open('07_05_2016.json', 'w') as output:
             output.write(json.dumps(self.drivers))
 
 
 matrix = Matrix(
     filename='sample.xlsx',
     driver_cells=[[0, 1], [0, 3], [0, 5], [0, 6], [0, 8]],
-    point_by_driver_rows=[[3, 28], [3, 14], [0, 0], [3, 6], [3, 8]],
+    point_by_driver_rows=[[3, 22], [3, 15], [0, 0], [3, 6], [3, 8]],
     sheet_index=1)
 
 matrix.read_drivers()
