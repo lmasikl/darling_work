@@ -1,8 +1,9 @@
 function set_markers (map, drivers) {
-    var colors = ['red', 'darkred', 'orange', 'green', 'darkgreen', 'blue', 'purple', 'darkpuple', 'cadetblue'];
+    // var colors = ['red', 'darkred', 'orange', 'green', 'darkgreen', 'blue', 'purple', 'darkpuple', 'cadetblue'];
+    var colors = ['red', 'orange', 'green', 'blue', 'purple', 'cadetblue'];
     for (i = 0; i < drivers.length; i++) {
         var styleMarker = L.AwesomeMarkers.icon({
-            markerColor: colors[i * 2]
+            markerColor: colors[i]
         });
         for (j = 0; j < drivers[i].points.length; j++) {
             createMarker(map, styleMarker, drivers[i], colors, drivers);

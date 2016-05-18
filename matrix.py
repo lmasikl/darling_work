@@ -121,6 +121,11 @@ def get_matrixes():
     ]
 
 
+begin = datetime.datetime.now()
 for matrix in get_matrixes():
+    matrix_begin = datetime.datetime.now()
     matrix.read_drivers()
     matrix.save_data_to_json()
+    print('Processed matrix {} for {}'.format(matrix.data_file, datetime.datetime.now() - matrix_begin))
+
+print('Processed for {}'.format(datetime.datetime.now() - begin))
