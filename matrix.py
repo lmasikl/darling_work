@@ -1,14 +1,12 @@
+import asyncio
 import datetime
 import json
 import logging
-import random
 
 import requests
 from xlrd import open_workbook
 
 logger = logging.getLogger(__name__)
-
-YANDEX_KEY = 'AGMxNlcBAAAA0yj5PgIAPvJB1n78DFuaVj8vMTdfl9XH0rkAAAAAAAAAAAD00qkNa3lj-mshcwiMbdL0PINy9Q=='
 
 
 class Matrix(object):
@@ -16,6 +14,7 @@ class Matrix(object):
     drivers = []
 
     def __init__(self, filename, driver_cells, point_by_driver_rows, sheet_index):
+        self.data_file = '{0}.js'.format(filename.split('.')[0])
         self.sheet = open_workbook(filename=filename).sheet_by_index(sheet_index)
         self.driver_cells = driver_cells
         self.point_by_driver_rows = point_by_driver_rows
@@ -38,13 +37,8 @@ class Matrix(object):
         for row in range(begin, end + 1):
             cell_title = self.sheet.cell(row, col).value.split('|')
             point_title = cell_title[0]
-            if len(cell_title) > 1:
-                lng = float(cell_title[1].split(',')[0].strip())
-                lat = float(cell_title[1].split(',')[1].strip())
-            else:
-                lng = random.randint(5545, 5565) / 100
-                lat = random.randint(3605, 3625) / 100
-
+            lng = float(cell_title[1].split(',')[0].strip())
+            lat = float(cell_title[1].split(',')[1].strip())
             value_cell = self.sheet.cell(row, col + 1).value
             if not point_title:
                 continue
@@ -55,55 +49,78 @@ class Matrix(object):
                     'lng': lng,
                     'lat': lat,
                 },
-                'shortest_path': None,
+                'distances': [],
                 'point_value': float(value_cell) if value_cell else 0,
             })
 
-        # for i, point in enumerate(points[:]):
-        #     other_points = list(filter(lambda p: p != point, points))
-        #     points[i]['shortest_path'] = self.get_shortest_path(point, other_points)
+        self.get_distances(points)
+        # loop = asyncio.get_event_loop()
+        # loop.run_until_complete(self.get_distances(points))
+        # loop.close()
 
         return points
 
-    def get_shortest_path(self, point, points):
-        min_path = 0
-        for dest_point in points:
-            import pdb; pdb.set_trace()
-            router_url = 'https://router.project-osrm.org/viaroute?instructions=false&alt=false&z=15&loc={lat_s},{lng_s}&loc={lat_d},{lng_d}'.format(
-                lat_s=point['point_coordinates']['lat'], lng_s=point['point_coordinates']['lng'],
-                lat_d=dest_point['point_coordinates']['lat'], lng_d=dest_point['point_coordinates']['lng'],
-            )
-            response = requests.get(router_url)
+    def get_distances(self, points):
+        for i, point in enumerate(points[:]):
+            for dest_point in points:
+                self.get_distance(point, dest_point)
 
-    def print_drivers(self):
-        for driver in self.drivers:
-            print(driver)
+    def get_distance(self, point, dest_point):
+        if dest_point['point_title'] == point['point_title']:
+            point['distances'].append({
+                'distance': 0.0,
+                'point_title': dest_point['point_title'],
+            })
+            return
+
+        router_url = 'https://router.project-osrm.org/viaroute?instructions=false&alt=false&z=15&loc={lng_s},{lat_s}&loc={lng_d},{lat_d}'.format(
+            lat_s=point['point_coordinates']['lat'], lng_s=point['point_coordinates']['lng'],
+            lat_d=dest_point['point_coordinates']['lat'], lng_d=dest_point['point_coordinates']['lng'],
+        )
+        response = requests.get(router_url)
+        result = json.loads(response.text)
+        point['distances'].append({
+            'distance': result['route_summary']['total_distance'] / 1000.0,
+            'point_title': dest_point['point_title'],
+        })
 
     def create_matrix(self):
         raise NotImplementedError
 
-    def get_maps(self):
-        api_url = 'https://static-maps.yandex.ru/1.x/?'
-        url_parts = [
-        'l=map',
-        'pt=37.620070,55.753630,pmwtm1~37.64,55.76363,pmwtm99'
-        ]
-        url = api_url + '&'.join(url_parts)
-        print(url)
-        request = requests.get(url)
-        with open('test.png', 'w') as output:
-            output.write(request.content)
-
     def save_data_to_json(self):
-        with open('01_05_2016.json', 'w') as output:
-            output.write(json.dumps(self.drivers))
+        with open(self.data_file, 'w') as output:
+            var = 'var drivers = {0};'.format(json.dumps(self.drivers))
+            output.write(var)
 
 
-matrix = Matrix(
-    filename='01_05_2016.xlsx',
-    driver_cells=[[0, 1], [0, 3]],
-    point_by_driver_rows=[[3, 23], [3, 7]],
-    sheet_index=1)
+def get_matrixes():
+    return [
+        Matrix(
+            filename='01_05_2016.xlsx',
+            driver_cells=[[0, 1], [0, 3]],
+            point_by_driver_rows=[[3, 24], [3, 8]],
+            sheet_index=1),
 
-matrix.read_drivers()
-matrix.save_data_to_json()
+        Matrix(
+            filename='07_05_2016.xlsx',
+            driver_cells=[[0, 1], [0, 3], [0, 6], [0, 8]],
+            point_by_driver_rows=[[3, 22], [3, 15], [3, 6], [3, 8]],
+            sheet_index=1),
+
+        Matrix(
+            filename='08_05_2016.xlsx',
+            driver_cells=[[2, 1], [2, 3]],
+            point_by_driver_rows=[[5, 27], [5, 12]],
+            sheet_index=1),
+
+        Matrix(
+            filename='24_04_2016.xlsx',
+            driver_cells=[[0, 1], [0, 3]],
+            point_by_driver_rows=[[2, 22], [2, 9]],
+            sheet_index=1),
+    ]
+
+
+for matrix in get_matrixes():
+    matrix.read_drivers()
+    matrix.save_data_to_json()

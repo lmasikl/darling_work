@@ -5,25 +5,41 @@
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
+        <title>24.04.2016</title>
+
         <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
         <style>
             #mapid {
-                height: 750px;
+                height: 550px;
                 width: 100%;
             }
         </style>
     </head>
     <body>
-        <div id="mapid"></div>
-        <p>Общий объем: <span id="total_value"></span> м. куб.</p>
-        <p>Всего точек: <span id="total_points"></span></p>
-        <script
-			  src="https://code.jquery.com/jquery-2.2.3.min.js"
-			  integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="
-			  crossorigin="anonymous"></script>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div id="mapid"></div>
+                </div>
+                <div class="col-xs-12">
+                    <p>Общий объем: <span id="total_value"></span> м. куб.</p>
+                    <p>Всего точек: <span id="total_points"></span></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <table id="distances" class="table table-bordered table-condensed table-hover">
+                        <caption>Расстояние между точками</caption>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
         <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
         <script src="24_04_2016.js"></script>
+        <script src="script.js"></script>
     </body>
 </html>
