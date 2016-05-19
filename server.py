@@ -7,6 +7,9 @@ import jinja2
 
 from aiohttp import web
 
+import aiohttp_debugtoolbar
+from aiohttp_debugtoolbar import toolbar_middleware_factory
+
 logger = logging.getLogger(__name__)
 
 @asyncio.coroutine
@@ -24,7 +27,11 @@ def start_server(name, server, l):
 if __name__ == '__main__':
     app_dir = os.path.dirname(__file__)
 
-    app = web.Application()
+    loop = asyncio.get_event_loop()
+
+    app = web.Application(loop=loop, middlewares=[toolbar_middleware_factory])
+
+    aiohttp_debugtoolbar.setup(app)
 
     # Setup Jinja2 template engine
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(app_dir))
@@ -32,7 +39,6 @@ if __name__ == '__main__':
     # Application routes
     app.router.add_route('GET', '/', index)
 
-    loop = asyncio.get_event_loop()
 
     # Run http server
     http_server = loop.create_server(app.make_handler(), '127.0.0.1', 5000)
